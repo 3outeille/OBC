@@ -44,6 +44,8 @@ parser.add_argument('--min-sparsity', type=float, default=0)
 parser.add_argument('--max-sparsity', type=float, default=0)
 parser.add_argument('--delta-sparse', type=float, default=0)
 parser.add_argument('--sparse-dir', type=str, default='')
+# DEBUG
+parser.add_argument('--debug', action='store_true')
 
 args = parser.parse_args()
 
@@ -53,13 +55,17 @@ dataloader, testloader = get_loaders(
     nsamples=args.nsamples, seed=args.seed,
     noaug=args.noaug
 )
-
-batch_train = [next(iter(dataloader)) for _ in range(5)]
-                     
+             
 if args.nrounds == -1:
     args.nrounds = 1 if 'yolo' in args.model or 'bert' in args.model else 10 
     if args.noaug:
         args.nrounds = 1
+
+# HARDCODED FOR FASTER DEBUGGING
+if args.debug:
+    batch_train = [next(iter(dataloader)) for _ in range(4)]
+    args.nrounds = 1
+
 get_model, test, run = get_functions(args.model)
 
 aquant = args.compress == 'quant' and args.abits < 32
