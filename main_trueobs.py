@@ -53,6 +53,9 @@ dataloader, testloader = get_loaders(
     nsamples=args.nsamples, seed=args.seed,
     noaug=args.noaug
 )
+
+batch_train = [next(iter(dataloader)) for _ in range(5)]
+                     
 if args.nrounds == -1:
     args.nrounds = 1 if 'yolo' in args.model or 'bert' in args.model else 10 
     if args.noaug:
@@ -119,7 +122,8 @@ if not (args.compress == 'quant' and not wquant):
         handles.append(layersd[name].register_forward_hook(add_batch(name)))
     
     for i in range(args.nrounds):
-        for j, batch in enumerate(dataloader):
+        for j, batch in enumerate(batch_train):
+        # for j, batch in enumerate(dataloader):
             print(i, j)
             with torch.no_grad():
                 run(modeld, batch)
@@ -165,28 +169,29 @@ if not (args.compress == 'quant' and not wquant):
 #         for sparsity in sparsities:
 #             name = '%s_%04d.pth' % (args.model, int(sparsity * 10000))
 #             torch.save(sds[sparsity], os.path.join(args.sparse_dir, name))
-    exit()
+#     exit()
 
-if aquant:
+# if aquant:
 
-    print('Quantizing activations ...')
+#     print('Quantizing activations ...')
     
-    def init_actquant(name):
-        def tmp(layer, inp, out):
-            layersp[name].quantizer.find_params(inp[0].data)
-        return tmp
+#     def init_actquant(name):
+#         def tmp(layer, inp, out):
+#             layersp[name].quantizer.find_params(inp[0].data)
+#         return tmp
     
-    handles = []
+#     handles = []
     
-    for name in layersd:
-        handles.append(layersd[name].register_forward_hook(init_actquant(name)))
+#     for name in layersd:
+#         handles.append(layersd[name].register_forward_hook(init_actquant(name)))
     
-    with torch.no_grad():
-        run(modeld, next(iter(dataloader)))
+#     with torch.no_grad():
+#         run(modeld, next(iter(dataloader)))
     
-    for h in handles: h.remove()
+#     for h in handles: h.remove()
 
-if args.save:
-    torch.save(modelp.state_dict(), args.save)
+# if args.save:
+#     torch.save(modelp.state_dict(), args.save)
 
-test(modelp, testloader)
+# test(modelp, testloader)
+# test(modelp, first_batch_test)

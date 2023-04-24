@@ -177,9 +177,28 @@ def get_bertsquad(layers=12):
     import bertsquad
     return bertsquad.get_model(layers=layers)
 
-from torchvision.models import resnet18, resnet34, resnet50, resnet101 
+from torchvision.models import resnet18, resnet34, resnet50, resnet101
+
+class Dummy(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.C1 = nn.Conv2d(in_channels=3, out_channels=6, kernel_size=(5,5), stride=2)
+        self.C2 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=(5,5), stride=2)
+
+        self.FC1 = nn.Linear(in_features=16*5*5, out_features=120)
+        self.FC3 = nn.Linear(in_features=120, out_features=10)  
+        
+        
+    def forward(self, x):
+        x = torch.tanh(self.C1(x))
+        x = torch.tanh(self.C2(x))
+        x = x.view(-1, 16*5*5)
+        x = torch.tanh(self.FC1(x))
+        x = self.FC3(x)
+        return x
 
 get_models = {
+    "dummy": lambda: Dummy(),
     'rn18': lambda: resnet18(pretrained=True),
     'rn34': lambda: resnet34(pretrained=True),
     'rn50': lambda: resnet50(pretrained=True),
