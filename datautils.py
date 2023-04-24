@@ -76,6 +76,21 @@ def get_coco(path, batchsize):
     return train_data, test_data
 
 
+def get_cifar10(path):
+    train_data = datasets.CIFAR10(path, train=True, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+    )
+    test_data = datasets.CIFAR10(path, train=False, download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+    )
+    return train_data, test_data
+
 DEFAULT_PATHS = {
     'imagenet': [
         '../imagenet'
@@ -89,27 +104,32 @@ def get_loaders(
     name, path='', batchsize=-1, workers=8, nsamples=1024, seed=0,
     noaug=False
 ):
-    if name == 'squad':
-        if batchsize == -1:
-            batchsize = 16
-        import bertsquad
-        set_seed(seed)
-        return bertsquad.get_dataloader(batchsize), None
+    # if name == 'squad':
+    #     if batchsize == -1:
+    #         batchsize = 16
+    #     import bertsquad
+    #     set_seed(seed)
+    #     return bertsquad.get_dataloader(batchsize), None
 
-    if not path:
-        for path in DEFAULT_PATHS[name]:
-            if os.path.exists(path):
-                break
+    # if not path:
+    #     for path in DEFAULT_PATHS[name]:
+    #         if os.path.exists(path):
+    #             break
 
-    if name == 'imagenet':
+    # if name == 'imagenet':
+    #     if batchsize == -1:
+    #         batchsize = 128
+    #     train_data, test_data = get_imagenet(path, noaug=noaug)
+    #     train_data = random_subset(train_data, nsamples, seed)
+    # if name == 'coco':
+    #     if batchsize == -1:
+    #         batchsize = 16
+    #     train_data, test_data = get_coco(path, batchsize)
+
+    if name == 'cifar10':
         if batchsize == -1:
             batchsize = 128
-        train_data, test_data = get_imagenet(path, noaug=noaug)
-        train_data = random_subset(train_data, nsamples, seed)
-    if name == 'coco':
-        if batchsize == -1:
-            batchsize = 16
-        train_data, test_data = get_coco(path, batchsize)
+        train_data, test_data = get_cifar10(path)
 
     collate_fn = train_data.collate_fn if hasattr(train_data, 'collate_fn') else None
     trainloader = DataLoader(
